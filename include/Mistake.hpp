@@ -21,8 +21,9 @@ private:
     status statusOfimproving;
 public: 
     Mistake();
-    Mistake(std::string& name, std::string& wrongDescription, std::string& cause, std::string& solution, 
-            std::string& category, std::string& level, std::string& date, status statusOfimproving);
+    Mistake(const std::string& name, const std::string& wrongDescription, const std::string& cause,
+        const std::string& solution, const std::string& category, const std::string& level,
+        const std::string& date, status statusOfimproving);
     
     
     void display() const;

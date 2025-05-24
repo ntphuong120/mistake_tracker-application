@@ -2,22 +2,17 @@
 
 Mistake::Mistake() {}
 
-Mistake::Mistake(std::string& name, std::string& wrongDescription, std::string& cause, std::string& solution, 
-                std::string& category, std::string& level, std::string& date, status statusOfimproving) {
-
-    this->name = name;
-    this->wrongDescription = wrongDescription;
-    this->cause = cause;
-    this->solution = solution;
-    this->category = category;
-    this->level = level;
-    this->statusOfimproving = statusOfimproving;
-}
+Mistake::Mistake(const std::string& name, const std::string& wrongDescription, const std::string& cause,
+                 const std::string& solution, const std::string& category, const std::string& level,
+                 const std::string& date, status statusOfimproving)
+    : name(name), wrongDescription(wrongDescription), cause(cause),
+      solution(solution), category(category), level(level),
+      date(date), statusOfimproving(statusOfimproving) {}
 
 void Mistake::display() const {
     std::cout << "Name: " << name << "\nCategory: " << category << "\nDescription: " << wrongDescription
     << "\nCause: " << cause << "\nSolution: " << solution << "\nLevel: " << level 
-    << "\ndate" << date << "\nStatus Of Improving: " << statusOfimproving << "\n\n";
+    << "\ndate" << date << "\nStatus Of Improving: " << enumTostring(statusOfimproving) << "\n\n";
 }
 
 std::string Mistake::getName() const {
@@ -71,7 +66,7 @@ status Mistake::stringToenum(const std::string& str) {
         return NOTSTARTED;
     else if (str == "Ongoing" || str == "ONGOING")
         return ONGOING;
-    else 
+    else if (str == "Done" || str == "DONE")
         return DONE;
     
     return NOTSTARTED;

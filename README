@@ -1,0 +1,12 @@
+This is an application which enables taking-notes about our mistakes during learning or working as well as tracking easily. It is called Mistake Tracker
+
+Main Features:
+- Write (Can Edit): 
+  + We can create any categories that we want.
+  + Depending on our mistakes, we may set its level from 1 to 10.
+  + To add our mistake on Application, we need Fill in three types of information, including: Name, Wrong Description, Cause, and Solution.
+- Read (Can Edit):
+  + You can find our mistakes through search tool, categories, and level.
+  + Our mistakes has two modes that is brief and detail.
+    + brief consists of ID, Name, Date, Wrong Description, Cause, Solution, Level, and Status of improving(Not Started, In Progress, Done).
+    + Detail is that same what you write.

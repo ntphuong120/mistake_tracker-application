@@ -1,0 +1,4 @@
+ID|Category|Description|Cause|Solution|Level|Date|Status
+0|test 1|test 1|test 1|test 1|Low|24/05/2025|DONE
+1|test 2|test 2|test 2|test 2|High|24/05/2025|NOT STARTED
+2|test 3|test 3|test 3|test 3|Medium|24/05/2025|NOT STARTED

@@ -5,9 +5,9 @@
 
 class UI {
 private:
-    Tracker tracker;
+    Tracker& tracker;
 public:
-    UI(Tracker& tracker) : tracker(tracker) {}
+    UI(Tracker& t) : tracker(t) {}
     void run();
 };
 

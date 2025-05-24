@@ -1,77 +1,134 @@
 #include "../include/Mistake.hpp"
+#include <string>
+#include <algorithm>
 
-Mistake::Mistake() {}
+std::atomic<int> Mistake::nextID = 1;
 
-Mistake::Mistake(const std::string& name, const std::string& wrongDescription, const std::string& cause,
-                 const std::string& solution, const std::string& category, const std::string& level,
-                 const std::string& date, status statusOfimproving)
-    : name(name), wrongDescription(wrongDescription), cause(cause),
-      solution(solution), category(category), level(level),
-      date(date), statusOfimproving(statusOfimproving) {}
+Mistake::Mistake() : ID(nextID++) {}
+Mistake::Mistake(
+            const std::string& Category, const std::string& Description, 
+            const std::string& Cause, const std::string& Solution, const std::string& Level,
+            const std::string Date, StatusOfImproving status_ofimproving)
+            : 
+            ID(nextID++), Category(Category), Description(Description), Cause(Cause), 
+            Solution(Solution), Level(Level), Date(Date), status_ofimproving(status_ofimproving) {}
+Mistake::Mistake(
+            int ID, const std::string& Category, const std::string& Description, 
+            const std::string& Cause, const std::string& Solution, const std::string& Level,
+            const std::string Date, StatusOfImproving status_ofimproving)
+            : 
+            ID(nextID++), Category(Category), Description(Description), Cause(Cause), 
+            Solution(Solution), Level(Level), Date(Date), status_ofimproving(status_ofimproving) {}
 
-void Mistake::display() const {
-    std::cout << "Name: " << name << "\nCategory: " << category << "\nDescription: " << wrongDescription
-    << "\nCause: " << cause << "\nSolution: " << solution << "\nLevel: " << level 
-    << "\ndate" << date << "\nStatus Of Improving: " << enumTostring(statusOfimproving) << "\n\n";
-}
 
-std::string Mistake::getName() const {
-    return name;
-}
-
-std::string Mistake::getDescription() const {
-    return wrongDescription;
-}
-
-std::string Mistake::getCause() const {
-    return cause;
-}
-
-std::string Mistake::getSolution() const {
-    return solution;
+// Getters
+int Mistake::getID() const {
+    return ID;
 }
 
 std::string Mistake::getCategory() const {
-    return category;
+    return Category;
+}
+
+std::string Mistake::getDescription() const {
+    return Description;
+}
+
+std::string Mistake::getCause() const {
+    return Cause;
+}
+
+std::string Mistake::getSolution() const {
+    return Solution;
 }
 
 std::string Mistake::getLevel() const {
-    return level;
+    return Level;
 }
 
 std::string Mistake::getDate() const {
-    return date;
+    return Date;
 }
 
-status Mistake::getStatus() const {
-    return statusOfimproving;
+StatusOfImproving Mistake::getStatusOfImproving() const {
+    return status_ofimproving;
 }
 
-std::string Mistake::enumTostring(status e_status) {
-    switch (e_status)
+// Setters
+void Mistake::setID() {
+    this->ID = ID - 1;
+}
+
+void Mistake::setCategory(const std::string& Category_toSet) {
+    Category = Category_toSet;
+}
+
+void Mistake::setDescription(const std::string& Description_toSet) {
+    Description = Description_toSet;
+}
+
+void Mistake::setCause(const std::string& Cause_toSet) {
+    Cause = Cause_toSet;
+}
+
+void Mistake::setSolution(const std::string& Solution_toSet) {
+    Solution = Solution_toSet;
+}
+
+void Mistake::setLevel(const std::string& Level_toSet) {
+    Level = Level_toSet;
+}
+
+void Mistake::setStatusOfImproving(const std::string& Status_toSet) {
+    StatusOfImproving enumStatus = stringToEnum(Status_toSet);
+
+    status_ofimproving = enumStatus;
+}
+
+// Display information 
+void Mistake::display() const {
+    std::cout << "---------------------------------------------------\n";    
+    std::cout << "ID: " << ID << "\n";
+    std::cout << "Category: " << Category << "\n";
+    std::cout << "Description: " << Description << "\n";
+    std::cout << "Cause: " << Cause << "\n";
+    std::cout << "Solution: " << Solution << "\n";
+    std::cout << "Level: "  << Level << "\n";
+    std::cout << "Status Of Improving: " << enumToString(status_ofimproving) << "\n";
+    std::cout << "---------------------------------------------------\n\n";
+
+}
+
+// Methods for status of improving
+std::string Mistake::enumToString(StatusOfImproving enum_status) {
+    switch (enum_status)
     {
     case NOTSTARTED:
         return "NOT STARTED";
     case ONGOING:
-        return "ONGOING";
+        return "ON GOING";
     case DONE:
         return "DONE";
+    
     default:
         return "NOT STARTED";
-    }
+    }    
 }
 
-status Mistake::stringToenum(const std::string& str) {
-    if (str == "Not Started" || str == "NOT STARTED")
-        return NOTSTARTED;
-    else if (str == "Ongoing" || str == "ONGOING")
-        return ONGOING;
-    else if (str == "Done" || str == "DONE")
-        return DONE;
+StatusOfImproving Mistake::stringToEnum(const std::string& str_status) {
+    std::string status_lower = str_status;
+    std::transform(status_lower.begin(), status_lower.end(), status_lower.begin(), ::tolower);
     
+    if (status_lower == "not started") 
+        return NOTSTARTED;
+    if (status_lower == "on going")
+        return ONGOING;
+    if (status_lower == "done")
+        return DONE;
+        
     return NOTSTARTED;
 }
 
-std::string Mistake::getStatusString() const {
-    return Mistake::enumTostring(statusOfimproving);
+std::string Mistake::getStatusString(StatusOfImproving enum_status) {
+    return enumToString(enum_status);    
 }

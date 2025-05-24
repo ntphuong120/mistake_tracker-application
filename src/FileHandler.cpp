@@ -1,80 +1,91 @@
 #include "../include/FileHandler.hpp"
-#include <iomanip>
 #include <fstream>
+#include <stdexcept>
+#include <iomanip>
 #include <sstream>
-#include <vector>
-#include <string>
 
 void FileHandler::saveToFile(const std::vector<Mistake>& mistakes, const std::string& filename) {
-    std::ofstream myFile(filename, std::ios::out); // Ghi đè file
-    if (!myFile.is_open()) {
-        std::cout << "Unable to open file: " << filename << std::endl;
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error: Unable to open file " << filename << " for Writing\n";
         return;
     }
 
-    // Tùy chọn: Ghi tiêu đề một lần (nếu cần)
-    myFile << "Name|Description|Cause|Solution|Category|Level|Date|Status\n";
+    try
+    {
+        file << "ID|Category|Description|Cause|Solution|Level|Date|Status\n";
 
-    for (const auto& mistake : mistakes) {
-        myFile << mistake.getName() << "|" 
-               << mistake.getDescription() << "|" 
-               << mistake.getCause() << "|" 
-               << mistake.getSolution() << "|" 
-               << mistake.getCategory() << "|" 
-               << mistake.getLevel() << "|" 
-               << mistake.getDate() << "|" 
-               << mistake.getStatusString();
+        for (const Mistake& mistake : mistakes) {
+            file << mistake.getID() << "|"
+                 << mistake.getCategory() << "|"
+                 << mistake.getDescription() << "|"
+                 << mistake.getCause() << "|"
+                 << mistake.getSolution() << "|"
+                 << mistake.getLevel() << "|"
+                 << mistake.getDate() << "|"
+                 << mistake.getStatusString(mistake.getStatusOfImproving()) << '\n';
+        }
+
+        file.close();
+        return;
     }
-
-    myFile.close();
+    catch(const std::exception& e)
+    {
+        std::cerr << "Error writing to text file: " << e.what() << '\n';
+        return;
+    }
 }
 
 std::vector<Mistake> FileHandler::loadFromFile(const std::string& filename) {
-    std::ifstream myFile(filename, std::ios::in);
     std::vector<Mistake> mistakes;
+    std::ifstream file(filename);
 
-    if (!myFile.is_open()) {
-        std::cout << "Unable to open file: " << filename << std::endl;
+    if (!file.is_open()) {
+        std::cerr << "Error: Unable to open file " << filename << " for reading\n";
         return mistakes;
-    } 
+    }
 
     std::string line;
     int lineCount = 0;
-    // Bỏ qua dòng tiêu đề nếu có
+    // Skip the first line in file
     bool firstLine = true;
-    while (std::getline(myFile, line)) {
+
+    while(std::getline(file, line)) {
         lineCount++;
-        if (line.empty()) {
-            std::cout << "Skipping empty line at line " << lineCount << std::endl;
-            continue;
-        }
-        if (firstLine && line.find("Name|Description|Cause|Solution|Category|Level|Date|Status") == 0) {
+        if (firstLine && line.find("ID|Category|Description|Cause|Solution|Level|Date|Status") == 0) {
             firstLine = false;
-            continue; // Bỏ qua dòng tiêu đề
+            continue;
         }
         firstLine = false;
 
         std::stringstream ss(line);
-        std::string na, desc, cau, sol, cat, lev, dat, stat;
-        if (!std::getline(ss, na, '|') || !std::getline(ss, desc, '|') ||
-            !std::getline(ss, cau, '|') || !std::getline(ss, sol, '|') ||
-            !std::getline(ss, cat, '|') || !std::getline(ss, lev, '|') ||
-            !std::getline(ss, dat, '|') || !std::getline(ss, stat, '|')) {
-            std::cout << "Invalid line format at line " << lineCount << ": " << line << std::endl;
+        int id;
+        std::string id_str, category, description, cause, solution, level, date, status;
+        if (!std::getline(ss, id_str, '|') || !std::getline(ss, category, '|') ||
+            !std::getline(ss, description, '|') || !std::getline(ss, cause, '|') ||
+            !std::getline(ss, solution, '|') || !std::getline(ss, level, '|') ||
+            !std::getline(ss, date, '|') || !std::getline(ss, status, '|')) 
+        {
+            std::cout << "Invalid line format at line " << lineCount << ": " << line << "\n";
             continue;
         }
 
-        try {
-            status statusEnum = Mistake::stringToenum(stat);
-            mistakes.emplace_back(na, desc, cau, sol, cat, lev, dat, statusEnum);
-        } catch (const std::exception& e) {
-            std::cout << "Error parsing status at line " << lineCount << ": " << stat 
-                      << " (" << e.what() << ")" << std::endl;
-            continue;
+        try
+        {
+            id = std::stoi(id_str);
+            StatusOfImproving enum_status = Mistake::stringToEnum(status);
+            mistakes.emplace_back(id, category, description, cause, solution, level, date, enum_status);
         }
+        catch(const std::exception& e)
+        {
+            std::cout << "Error parsing status at line " << lineCount << ": " << status 
+                      << " (" << e.what() << ")" << std::endl;
+
+            continue;
+        }    
     }
 
-    myFile.close();
-    std::cout << "Loaded " << mistakes.size() << " mistakes from file" << std::endl;
+    file.close();
+    std::cout << "Loaded " << mistakes.size() << " mistakes from file " << filename << '\n';
     return mistakes;
 }

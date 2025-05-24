@@ -13,21 +13,25 @@ public:
 
     bool containsCaseInsensitive(const std::string& str, const std::string& sub) const;
 
-    // Add
+    // Add a mistake
     void addMistake(const Mistake& mistake);
-    // Display
-    void displayAll() const;
+
     // Search
-    void searchByCategory(const std::string& fcategory);
-    void searchByLevel(const std::string& flevel);
-    void searchByName(const std::string& fname);
+    void searchByID(int ID_toFind) const;
+    void searchByDescription(const std::string& Description_toFind);
+    void searchByCategory(const std::string& Category_toFind);
+    void searchByLevel(const std::string& Level_toFind);
+    void searchByDate(const std::string& Date_toFind);
+
+    // Edit - Setters
+    bool removeMistake(int Mistake_ID);
+
+    // Display All
+    void displayAll() const;
 
     // File Handle
     void saveToFile(const std::string& filename) const;
     void loadFromFile(const std::string& filename);
-
-    // Edit
-    
 };
 
 #endif

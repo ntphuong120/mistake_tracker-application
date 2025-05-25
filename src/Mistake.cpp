@@ -60,26 +60,37 @@ void Mistake::setID() {
 }
 
 void Mistake::setCategory(const std::string& Category_toSet) {
+    if (Category_toSet.empty()) return;
+
     Category = Category_toSet;
 }
 
 void Mistake::setDescription(const std::string& Description_toSet) {
+    if (Description_toSet.empty()) return;
+    
     Description = Description_toSet;
 }
 
 void Mistake::setCause(const std::string& Cause_toSet) {
+    if (Cause_toSet.empty()) return;
     Cause = Cause_toSet;
 }
 
 void Mistake::setSolution(const std::string& Solution_toSet) {
+    if (Solution_toSet.empty()) return;
+
     Solution = Solution_toSet;
 }
 
 void Mistake::setLevel(const std::string& Level_toSet) {
+    if (Level_toSet.empty()) return;
+
     Level = Level_toSet;
 }
 
 void Mistake::setStatusOfImproving(const std::string& Status_toSet) {
+    if (Status_toSet.empty()) return;
+
     StatusOfImproving enumStatus = stringToEnum(Status_toSet);
 
     status_ofimproving = enumStatus;
@@ -104,14 +115,14 @@ std::string Mistake::enumToString(StatusOfImproving enum_status) {
     switch (enum_status)
     {
     case NOTSTARTED:
-        return "NOT STARTED";
+        return "NOTSTARTED";
     case ONGOING:
-        return "ON GOING";
+        return "ONGOING";
     case DONE:
         return "DONE";
     
     default:
-        return "NOT STARTED";
+        return "NOTSTARTED";
     }    
 }
 
@@ -119,9 +130,9 @@ StatusOfImproving Mistake::stringToEnum(const std::string& str_status) {
     std::string status_lower = str_status;
     std::transform(status_lower.begin(), status_lower.end(), status_lower.begin(), ::tolower);
     
-    if (status_lower == "not started") 
+    if (status_lower == "notstarted") 
         return NOTSTARTED;
-    if (status_lower == "on going")
+    if (status_lower == "ongoing")
         return ONGOING;
     if (status_lower == "done")
         return DONE;

@@ -105,6 +105,7 @@ void Mistake::display() const {
     std::cout << "Cause: " << Cause << "\n";
     std::cout << "Solution: " << Solution << "\n";
     std::cout << "Level: "  << Level << "\n";
+    std::cout << "Date: " << Date << "\n";
     std::cout << "Status Of Improving: " << enumToString(status_ofimproving) << "\n";
     std::cout << "---------------------------------------------------\n\n";
 

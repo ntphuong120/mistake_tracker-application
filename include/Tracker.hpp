@@ -17,7 +17,7 @@ public:
     void addMistake(const Mistake& mistake);
 
     // Search
-    void searchByID(int ID_toFind) const;
+    int searchByID(int ID_toFind);
     void searchByDescription(const std::string& Description_toFind);
     void searchByCategory(const std::string& Category_toFind);
     void searchByLevel(const std::string& Level_toFind);
@@ -25,6 +25,7 @@ public:
 
     // Edit - Setters
     bool removeMistake(int Mistake_ID);
+    void Edit(int Mistake_ID, int index);
 
     // Display All
     void displayAll() const;

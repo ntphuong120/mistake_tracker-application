@@ -32,11 +32,11 @@ void UI::run() {
                 std::string category, description, cause, solution, level, status; // Bỏ 'date' ở đây
                 std::cout << "Category: ";
                 std::getline(std::cin, category);
-                std::cout << "Description: ";
+                std::cout << "Description: \n";
                 std::getline(std::cin, description);
-                std::cout << "Cause: ";
+                std::cout << "Cause: \n";
                 std::getline(std::cin, cause);
-                std::cout << "Solution: ";
+                std::cout << "Solution: \n";
                 std::getline(std::cin, solution);
                 std::cout << "Level(Low, Medium, High): ";
                 std::getline(std::cin, level);
@@ -134,10 +134,18 @@ void UI::run() {
                         tracker.searchByDate(searchDate);
                         std::cout << "====================================================================\n\n";
                     } else if (choice_search == 0){
-                        std::cout << "Quit!\n\n";
+                        std::cout << "=================================Exit===============================\n";
+                        std::cout << "---------------------------------------------------\n";
+                        std::cout << "Quit!\n";
+                        std::cout << "---------------------------------------------------\n";
+                        std::cout << "====================================================================\n\n";
                         break;
                     } else {
-                        std::cout << "Invaild Number!\n\n";
+                        std::cout << "=================================Error==============================\n";
+                        std::cout << "---------------------------------------------------\n";
+                        std::cout << "Invaild Number!\n";
+                        std::cout << "---------------------------------------------------\n";
+                        std::cout << "====================================================================\n\n";
                     }
                     
 
@@ -148,7 +156,21 @@ void UI::run() {
 
             case 3: // Edit
             {
+                std::cout << "===========================Identify Object==========================\n";
+                // Find object to Edit
+                int Mistake_ID;
+                std::cout << "Enter ID's Mistake: ";
+                std::cin >> Mistake_ID;
+                std::cin.ignore();
 
+                int index_ID = tracker.searchByID(Mistake_ID);
+
+                if (index_ID != -1) {
+                    // Editing
+                    tracker.Edit(Mistake_ID, index_ID);
+                }
+                std::cout << "====================================================================\n\n";
+                break;
             }
 
             case 4: // Display All
@@ -161,12 +183,21 @@ void UI::run() {
 
             case 0: 
             {
+                std::cout << "=================================Exit===============================\n";
+                std::cout << "---------------------------------------------------\n";
                 std::cout << "Quit!\n";
+                std::cout << "---------------------------------------------------\n";
+                std::cout << "====================================================================\n\n";
                 break;
             }
 
-            default:
-                std::cout << "Invaild Number!\n\n";
+            default: {
+                std::cout << "=================================Error==============================\n";
+                std::cout << "---------------------------------------------------\n";
+                std::cout << "Invaild Number!\n";
+                std::cout << "---------------------------------------------------\n";
+                std::cout << "====================================================================\n\n";
+            }
         }
 
     } while (choice_menu != 0);

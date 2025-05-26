@@ -2,15 +2,21 @@
 #include <cctype>
 #include <algorithm>
 #include <string>
+#include <iomanip>
+#include <map>
 
+// Constructors
 Tracker::Tracker() {
     mistakes = FileHandler::loadFromFile("data/mistake.txt");
 }
-Tracker::Tracker(std::vector<Mistake>& mistakes) {
-    this->mistakes = mistakes;
-    mistakes = FileHandler::loadFromFile("data/mistake.txt");
+
+Tracker::Tracker(const std::vector<Mistake>& mistakes) : mistakes(mistakes) {
+    // Load additional mistakes from file if needed
+    auto fileMistakes = FileHandler::loadFromFile("data/mistake.txt");
+    this->mistakes.insert(this->mistakes.end(), fileMistakes.begin(), fileMistakes.end());
 }
 
+// Helper methods
 bool Tracker::containsCaseInsensitive(const std::string& str, const std::string& sub) const {
     std::string strLower = str;
     std::string subLower = sub;
@@ -19,208 +25,298 @@ bool Tracker::containsCaseInsensitive(const std::string& str, const std::string&
     return strLower.find(subLower) != std::string::npos;
 }
 
-// Add a mistake
-void Tracker::addMistake(const Mistake& mistake) {
-    mistakes.push_back(mistake);
+void Tracker::displaySearchHeader(const std::string& searchType, const std::string& searchValue) const {
+    displaySeparator();
+    std::cout << std::setw(30) << std::left << ("🔍 Search Results: " + searchType) << std::endl;
+    std::cout << "Search term: \"" << searchValue << "\"" << std::endl;
+    displaySeparator();
 }
 
-// Search
-int Tracker::searchByID(int ID_toFind) {
-    for (int i = 0; i < mistakes.size(); ++i) {
-        if (mistakes[i].getID() == ID_toFind) {
+void Tracker::displayNoResultsMessage() const {
+    std::cout << "┌─────────────────────────────────────────────────────────────────┐" << std::endl;
+    std::cout << "│                        ❌ No Results Found                       │" << std::endl;
+    std::cout << "│                                                                 │" << std::endl;
+    std::cout << "│  No mistakes match your search criteria.                       │" << std::endl;
+    std::cout << "│  Try using different keywords or check your spelling.          │" << std::endl;
+    std::cout << "└─────────────────────────────────────────────────────────────────┘" << std::endl;
+}
+
+void Tracker::displaySuccessMessage(const std::string& message) const {
+    std::cout << "┌─────────────────────────────────────────────────────────────────┐" << std::endl;
+    std::cout << "│                           ✅ Success                            │" << std::endl;
+    std::cout << "│  " << std::setw(61) << std::left << message << "│" << std::endl;
+    std::cout << "└─────────────────────────────────────────────────────────────────┘" << std::endl;
+}
+
+void Tracker::displayErrorMessage(const std::string& message) const {
+    std::cout << "┌─────────────────────────────────────────────────────────────────┐" << std::endl;
+    std::cout << "│                            ❌ Error                             │" << std::endl;
+    std::cout << "│  " << std::setw(61) << std::left << message << "│" << std::endl;
+    std::cout << "└─────────────────────────────────────────────────────────────────┘" << std::endl;
+}
+
+void Tracker::displaySeparator() const {
+    std::cout << "═══════════════════════════════════════════════════════════════════" << std::endl;
+}
+
+// Core functionality
+void Tracker::addMistake(const Mistake& mistake) {
+    mistakes.push_back(mistake);
+    displaySuccessMessage("Mistake added successfully!");
+}
+
+bool Tracker::removeMistake(int mistakeId) {
+    auto it = std::find_if(mistakes.begin(), mistakes.end(),
+        [mistakeId](const Mistake& mistake) {
+            return mistake.getID() == mistakeId;
+        });
+    
+    if (it != mistakes.end()) {
+        mistakes.erase(it);
+        
+        // Update IDs for remaining mistakes
+        for (size_t i = 0; i < mistakes.size(); ++i) {
+            mistakes[i].setID();
+        }
+        
+        saveToFile("data/mistake.txt");
+        return true;
+    }
+    
+    return false;
+}
+
+// Search methods
+int Tracker::searchById(int id) {
+    for (size_t i = 0; i < mistakes.size(); ++i) {
+        if (mistakes[i].getID() == id) {
+            displaySearchHeader("ID", std::to_string(id));
             mistakes[i].display();
-            return i;
+            displaySeparator();
+            return static_cast<int>(i);
         }
     }
-
-    std::cout << "================================Unable==============================\n";
-    std::cout << "---------------------------------------------------\n";
-    std::cout << "Not Found!\n";
-    std::cout << "---------------------------------------------------\n";
-    std::cout << "====================================================================\n\n";
-
+    
+    displaySearchHeader("ID", std::to_string(id));
+    displayNoResultsMessage();
+    displaySeparator();
     return -1;
 }
 
-void Tracker::searchByDescription(const std::string& Description_toFind) {
-    std::vector<Mistake> result;
-
-    for (const Mistake& mistake : mistakes) {
-        if (containsCaseInsensitive(mistake.getDescription(), Description_toFind)) {
-            result.push_back(mistake);
+std::vector<Mistake> Tracker::searchByDescription(const std::string& description) {
+    std::vector<Mistake> results;
+    
+    for (const auto& mistake : mistakes) {
+        if (containsCaseInsensitive(mistake.getDescription(), description)) {
+            results.push_back(mistake);
         }
-    }
-
-    if (result.empty()) {
-        std::cout << "================================Unable==============================\n";
-        std::cout << "---------------------------------------------------\n";
-        std::cout << "Not Found!\n";
-        std::cout << "---------------------------------------------------\n";
-        std::cout << "====================================================================\n\n";
-        return;
-    }
-
-    for (const Mistake& re : result) {
-        re.display();
-    }
-}
-
-void Tracker::searchByCategory(const std::string& Category_toFind) {
-    std::vector<Mistake> result;
-
-    for (const Mistake& mistake : mistakes) {
-        if (containsCaseInsensitive(mistake.getCategory(), Category_toFind)) {
-            result.push_back(mistake);    
-        }
-    }
-
-    if (result.empty()) {
-        std::cout << "================================Unable==============================\n";
-        std::cout << "---------------------------------------------------\n";
-        std::cout << "Not Found!\n";
-        std::cout << "---------------------------------------------------\n";
-        std::cout << "====================================================================\n\n";
-        return;
-    }
-
-    for (const Mistake& re : result) {
-        re.display();
-    }
-}
-
-void Tracker::searchByLevel(const std::string& Level_toFind) {
-    std::vector<Mistake> result;    
-
-    for (const Mistake& mistake : mistakes) {
-        if (mistake.getLevel() == Level_toFind)
-            result.push_back(mistake);
     }
     
-    if (result.empty()) {
-        std::cout << "================================Unable==============================\n";
-        std::cout << "---------------------------------------------------\n";
-        std::cout << "Not Found!\n";
-        std::cout << "---------------------------------------------------\n";
-        std::cout << "====================================================================\n\n";
-        return;
-    }
-
-    for (const Mistake& re : result) {
-        re.display();
-    }
+    displaySearchResults(results, "Description", description);
+    return results;
 }
 
-void Tracker::searchByDate(const std::string& Date_toFind) {
-    std::vector<Mistake> result;
-
-    for (const Mistake& mistake : mistakes) {
-        if (containsCaseInsensitive(mistake.getDate(), Date_toFind))
-            result.push_back(mistake);
-    }
-
-    if (result.empty()) {
-        std::cout << "================================Unable==============================\n";
-        std::cout << "---------------------------------------------------\n";
-        std::cout << "Not Found!\n";
-        std::cout << "---------------------------------------------------\n";
-        std::cout << "====================================================================\n\n";
-        return;
-    }
-
-    for (const Mistake& re : result) {
-        re.display();
-    }
-}
-
-// Edit
-bool Tracker::removeMistake(int Mistake_ID) {
-    bool Found = false;
-
-    for (size_t i = 0; i < mistakes.size(); ++i) {
-        if (!Found && mistakes[i].getID() == Mistake_ID) {
-            mistakes.erase(mistakes.begin() + i);
-            Found = true;
-        }
-
-        if (Found) 
-            mistakes[i].setID();
-    }
-
-    Tracker::saveToFile("data/mistake.txt");
-    return Found;
-}
-
-void Tracker::Edit(int Mistake_ID, int index) {
-    std::cout << "=================================Edit===============================\n";
-    std::string editRemove;
-    std::cout << "Remove(NO or YES): ";
-    std::getline(std::cin, editRemove);
-
-    if (editRemove == "YES") {
-        bool check_remove = removeMistake(Mistake_ID);
-
-        if (check_remove == 1) {
-            std::cout << "---------------------------------------------------\n";
-            std::cout << "Removed!\n";
-            std::cout << "---------------------------------------------------\n";
-            std::cout << "====================================================================\n";
-            return;
-        }
-
-        else {
-            std::cout << "---------------------------------------------------\n";
-            std::cout << "Cannot remove this mistake";
-            std::cout << "---------------------------------------------------\n";
-            std::cout << "====================================================================\n";
-            return;
-        }
-    }
-
-    std::cout << "-Press Enter To Skip Edit-\n";
-
-    std::string editCategory;
-    std::cout << "Enter Category To Edit: ";
-    std::getline(std::cin, editCategory);
-    mistakes[index].setCategory(editCategory);
+std::vector<Mistake> Tracker::searchByCategory(const std::string& category) {
+    std::vector<Mistake> results;
     
-
-    std::string editDescription;
-    std::cout << "Enter Description To Edit: \n";
-    std::getline(std::cin, editDescription);
-    mistakes[index].setDescription(editDescription);
-
-    std::string editCause;
-    std::cout << "Enter Cause To Edit: \n";
-    std::getline(std::cin, editCause);
-    mistakes[index].setCause(editCause);
-
-    std::string editSolution;
-    std::cout << "Enter Solution To Edit: \n";
-    std::getline(std::cin, editSolution);
-    mistakes[index].setSolution(editSolution);
+    for (const auto& mistake : mistakes) {
+        if (containsCaseInsensitive(mistake.getCategory(), category)) {
+            results.push_back(mistake);
+        }
+    }
     
-    std::string editLevel;
-    std::cout << "Enter Level To Edit: ";
-    std::getline(std::cin, editLevel);
-    mistakes[index].setLevel(editLevel);
-
-    std::string editStatus;
-    std::cout << "Enter Status To Edit: ";
-    std::getline(std::cin, editStatus);
-    mistakes[index].setStatusOfImproving(editStatus);
-
-    std::cout << "====================================================================\n";
-
-    Tracker::saveToFile("data/mistake.txt");
+    displaySearchResults(results, "Category", category);
+    return results;
 }
 
-// Display All
+std::vector<Mistake> Tracker::searchByLevel(const std::string& level) {
+    std::vector<Mistake> results;
+    
+    for (const auto& mistake : mistakes) {
+        if (containsCaseInsensitive(mistake.getLevel(), level)) {
+            results.push_back(mistake);
+        }
+    }
+    
+    displaySearchResults(results, "Level", level);
+    return results;
+}
+
+std::vector<Mistake> Tracker::searchByDate(const std::string& date) {
+    std::vector<Mistake> results;
+    
+    for (const auto& mistake : mistakes) {
+        if (containsCaseInsensitive(mistake.getDate(), date)) {
+            results.push_back(mistake);
+        }
+    }
+    
+    displaySearchResults(results, "Date", date);
+    return results;
+}
+
+void Tracker::displaySearchResults(const std::vector<Mistake>& results, 
+                                 const std::string& searchType, 
+                                 const std::string& searchValue) const {
+    displaySearchHeader(searchType, searchValue);
+    
+    if (results.empty()) {
+        displayNoResultsMessage();
+    } else {
+        std::cout << "Found " << results.size() << " result(s):" << std::endl << std::endl;
+        for (const auto& mistake : results) {
+            mistake.display();
+            std::cout << std::endl;
+        }
+    }
+    
+    displaySeparator();
+}
+
+// Edit functionality
+bool Tracker::editMistake(int mistakeId) {
+    int index = searchById(mistakeId);
+    
+    if (index == -1) {
+        displayErrorMessage("Mistake with ID " + std::to_string(mistakeId) + " not found!");
+        return false;
+    }
+    
+    displaySeparator();
+    std::cout << "🛠️  EDIT MISTAKE #" << mistakeId << std::endl;
+    displaySeparator();
+    
+    std::string input;
+    std::cout << "Do you want to remove this mistake? (yes/no): ";
+    std::getline(std::cin, input);
+    std::transform(input.begin(), input.end(), input.begin(), ::tolower);
+    
+    if (input == "yes" || input == "y") {
+        if (removeMistake(mistakeId)) {
+            displaySuccessMessage("Mistake removed successfully!");
+            return true;
+        } else {
+            displayErrorMessage("Failed to remove mistake!");
+            return false;
+        }
+    }
+    
+    std::cout << "\n📝 Edit fields (press Enter to skip any field):\n" << std::endl;
+    
+    // Edit Category
+    std::cout << "Current Category: " << mistakes[index].getCategory() << std::endl;
+    std::cout << "New Category: ";
+    std::getline(std::cin, input);
+    if (!input.empty()) {
+        mistakes[index].setCategory(input);
+    }
+    
+    // Edit Description
+    std::cout << "\nCurrent Description: " << mistakes[index].getDescription() << std::endl;
+    std::cout << "New Description: ";
+    std::getline(std::cin, input);
+    if (!input.empty()) {
+        mistakes[index].setDescription(input);
+    }
+    
+    // Edit Cause
+    std::cout << "\nCurrent Cause: " << mistakes[index].getCause() << std::endl;
+    std::cout << "New Cause: ";
+    std::getline(std::cin, input);
+    if (!input.empty()) {
+        mistakes[index].setCause(input);
+    }
+    
+    // Edit Solution
+    std::cout << "\nCurrent Solution: " << mistakes[index].getSolution() << std::endl;
+    std::cout << "New Solution: ";
+    std::getline(std::cin, input);
+    if (!input.empty()) {
+        mistakes[index].setSolution(input);
+    }
+    
+    // Edit Level
+    std::cout << "\nCurrent Level: " << mistakes[index].getLevel() << std::endl;
+    std::cout << "New Level (Low/Medium/High): ";
+    std::getline(std::cin, input);
+    if (!input.empty()) {
+        mistakes[index].setLevel(input);
+    }
+    
+    // Edit Status
+    std::cout << "\nCurrent Status: " << mistakes[index].getStatusOfImproving() << std::endl;
+    std::cout << "New Status (NOTSTARTED/ONGOING/DONE): ";
+    std::getline(std::cin, input);
+    if (!input.empty()) {
+        mistakes[index].setStatusOfImproving(input);
+    }
+    
+    saveToFile("data/mistake.txt");
+    displaySuccessMessage("Mistake updated successfully!");
+    displaySeparator();
+    
+    return true;
+}
+
+// Display methods
 void Tracker::displayAll() const {
-    for (const Mistake& mistake : mistakes)
+    if (mistakes.empty()) {
+        std::cout << "┌─────────────────────────────────────────────────────────────────┐" << std::endl;
+        std::cout << "│                     📝 No Mistakes Recorded                     │" << std::endl;
+        std::cout << "│                                                                 │" << std::endl;
+        std::cout << "│  Start tracking your mistakes to improve your learning!        │" << std::endl;
+        std::cout << "└─────────────────────────────────────────────────────────────────┘" << std::endl;
+        return;
+    }
+    
+    displaySeparator();
+    std::cout << "📋 ALL MISTAKES (" << mistakes.size() << " total)" << std::endl;
+    displaySeparator();
+    
+    for (const auto& mistake : mistakes) {
         mistake.display();
+        std::cout << std::endl;
+    }
+    
+    displayStatistics();
 }
 
-// File Handle
+void Tracker::displayStatistics() const {
+    if (mistakes.empty()) return;
+    
+    std::map<std::string, int> levelCount;
+    std::map<std::string, int> statusCount;
+    std::map<std::string, int> categoryCount;
+    
+    for (const auto& mistake : mistakes) {
+        levelCount[mistake.getLevel()]++;
+        statusCount[mistake.getStatusString(mistake.getStatusOfImproving())]++;
+        categoryCount[mistake.getCategory()]++;
+    }
+    
+    displaySeparator();
+    std::cout << "📊 STATISTICS" << std::endl;
+    displaySeparator();
+    
+    std::cout << "By Level:" << std::endl;
+    for (const auto& pair : levelCount) {
+        std::cout << "  " << pair.first << ": " << pair.second << std::endl;
+    }
+    
+    std::cout << "\nBy Status:" << std::endl;
+    for (const auto& pair : statusCount) {
+        std::cout << "  " << pair.first << ": " << pair.second << std::endl;
+    }
+    
+    std::cout << "\nTop Categories:" << std::endl;
+    for (const auto& pair : categoryCount) {
+        std::cout << "  " << pair.first << ": " << pair.second << std::endl;
+    }
+    
+    displaySeparator();
+}
+
+// File operations
 void Tracker::saveToFile(const std::string& filename) const {
     FileHandler::saveToFile(mistakes, filename);
 }

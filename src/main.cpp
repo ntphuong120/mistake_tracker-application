@@ -3,7 +3,7 @@
 
 int main() {
     Tracker tracker;
-    UI ui(tracker);
+    UI ui;
 
     ui.run();
 
